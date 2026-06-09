@@ -1,0 +1,58 @@
+services:
+
+  postgres:
+    image: postgres:17
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: car_rental
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    env_file:
+      - .env.docker
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      - postgres
+
+  frontend-admin:
+    build:
+      context: ./frontend-admin
+
+    ports:
+      - "5173:5173"
+
+    depends_on:
+      - backend
+
+  frontend-client:
+    build:
+      context: ./frontend-client
+
+    ports:
+      - "5174:5173"
+
+    depends_on:
+      - backend
+
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 1234
+      DB_NAME: car_rental
+
+volumes:
+  postgres_data:
